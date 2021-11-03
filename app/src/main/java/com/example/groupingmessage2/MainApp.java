@@ -40,31 +40,47 @@ public class MainApp extends Application {
     protected DisposableMap dm = new DisposableMap();
     protected int max_num = 20, min_num = 5;
     protected Random random = new Random();
+    protected ArrayList<User> users, addusers;
+    protected String id[] = {"user1", "user2", "user3"};
     @Override
     public void onCreate(){
         super.onCreate();
         try {
             quickStart(this, "pre_3", "adadad", false);
-            ArrayList<User> users = new ArrayList<>();
-
             dm.add(ChatSDK.thread().createThread("Name", users, ThreadType.PrivateGroup, "custom-id", "http://image-url").subscribe(thread -> {
-                Log.e("mytag", "success");
-                for(int i = 0 ; i < 100 ; i++) {
-                    int rand = random.nextInt(max_num - min_num + 1) + min_num;
-                    try {
-                        java.lang.Thread.sleep(rand * 1000);
-                    } catch (InterruptedException e){
-                        e.printStackTrace();
-                    }
-                    sendTextMessage("hihihi", thread);
+                //여러 유저 추가.
+                for(int i = 0 ; i < id.length ; i++) {
+                    User user = ChatSDK.db().fetchUserWithEntityID(id[i]);
+                    addusers.add(user);
+                }
+                if(ChatSDK.thread().canAddUsersToThread(thread)) {
+                    dm.add(ChatSDK.thread().addUsersToThread(thread, addusers[0]).subscribe(() -> {
+                        Log.i("mytag", "add user success");
+                        ArrayList<User> arr = new ArrayList<>();
+                        arr.add(addusers[0]);
+                        dm.add(ChatSDK.thread().createThread("Na", arr, ThreadType.PrivateGroup, "custom", null).subscribe(thread_ -> {
+                            //메세지 보내기
+                            for(int i = 0 ; i < 100 ; i++) {
+                                int rand = random.nextInt(max_num - min_num + 1) + min_num;
+                                try {
+                                    java.lang.Thread.sleep(rand * 1000);
+                                } catch (InterruptedException e){
+                                    e.printStackTrace();
+                                }
+                                sendTextMessage("hihihi", thread_);
+                            }
+                        }, e -> {
+                            Log.e("thread_", e.toString())
+                        }));
+                    }));
                 }
             }, e -> {
-                Log.e("mytag", e.toString());
+                Log.e("thread", e.toString());
             }));
             listenForReceivedMessage();
         } catch (Exception e) {
             e.printStackTrace();
-            Log.e("mytag", e.toString());
+            Log.e("my error", e.toString());
         }
     }
 
