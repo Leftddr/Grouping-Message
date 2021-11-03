@@ -3,6 +3,9 @@ package com.example.groupingmessage2;
 import static sdk.chat.app.firebase.ChatSDKFirebase.quickStart;
 
 import android.app.Application;
+import android.content.BroadcastReceiver;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
@@ -40,11 +43,24 @@ public class MainApp extends Application {
     protected DisposableMap dm = new DisposableMap();
     protected int max_num = 20, min_num = 5;
     protected Random random = new Random();
-    protected ArrayList<User> users, addusers;
+    protected ArrayList<User> users;
+    protected ArrayList<User> addusers;
     protected String id[] = {"user1", "user2", "user3"};
+    protected BroadcastReceiver smsReceiver;
+    protected Intent intent = new Intent("com.example.groupingmessage.receive");
     @Override
     public void onCreate(){
         super.onCreate();
+        //broadcast receiver가 필요할까? 그냥 받았을 때 notification해주면 되는 거아닌가?
+        //동적으로 등록.
+        smsReceiver = new smsReceiver(this);
+        /*
+         IntentFilter intentFilter = new IntentFilter("android.provider.Telephony.SMS_RECEIVED");
+         registerReceiver(smsReceiver, intentFilter);
+        */
+        IntentFilter intentFilter = new IntentFilter("com.example.grouping.receive");
+        registerReceiver(smsReceiver, intentFilter);
+        
         try {
             quickStart(this, "pre_3", "adadad", false);
             dm.add(ChatSDK.thread().createThread("Name", users, ThreadType.PrivateGroup, "custom-id", "http://image-url").subscribe(thread -> {
@@ -62,7 +78,7 @@ public class MainApp extends Application {
                             arr.add(addusers[i]);
                             dm.add(ChatSDK.thread().createThread("Na", arr, ThreadType.PrivateGroup, "custom", null).subscribe(thread_ -> {
                                 //메세지 보내기
-                                for (int i = 0; i < 100; i++) {
+                                for (int cnt = 0; cnt < 100; cnt++) {
                                     int rand = random.nextInt(max_num - min_num + 1) + min_num;
                                     try {
                                         java.lang.Thread.sleep(rand * 1000);
@@ -97,9 +113,10 @@ public class MainApp extends Application {
 
     public void listenForReceivedMessage () {
         // Synchronous code
-        // 여기에 broadcast Receiver 필요
+        // 여기에 Notification 코드 필요
         ChatSDK.hook().addHook(Hook.sync(data -> {
             Message message = (Message) data.get(HookEvent.Message);
+            sendBroadcast(intent);
         }), HookEvent.MessageReceived);
     }
 }
