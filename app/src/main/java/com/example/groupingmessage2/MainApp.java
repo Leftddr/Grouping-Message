@@ -72,11 +72,9 @@ public class MainApp extends Application {
 
                 for(int i = 0 ; i < id.length ; i++) {
                     if (ChatSDK.thread().canAddUsersToThread(thread)) {
-                        dm.add(ChatSDK.thread().addUsersToThread(thread, addusers[i]).subscribe(() -> {
+                        dm.add(ChatSDK.thread().addUsersToThread(thread, addusers).subscribe(() -> {
                             Log.i("mytag", "add user success");
-                            ArrayList<User> arr = new ArrayList<>();
-                            arr.add(addusers[i]);
-                            dm.add(ChatSDK.thread().createThread("Na", arr, ThreadType.PrivateGroup, "custom", null).subscribe(thread_ -> {
+                            dm.add(ChatSDK.thread().createThread("Na", addusers, ThreadType.PrivateGroup, "custom", null).subscribe(thread_ -> {
                                 //메세지 보내기
                                 for (int cnt = 0; cnt < 100; cnt++) {
                                     int rand = random.nextInt(max_num - min_num + 1) + min_num;
@@ -88,7 +86,7 @@ public class MainApp extends Application {
                                     sendTextMessage("hihihi", thread_);
                                 }
                             }, e -> {
-                                Log.e("thread_", e.toString())
+                                Log.e("thread_", e.toString());
                             }));
                         }));
                     }
